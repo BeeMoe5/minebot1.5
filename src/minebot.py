@@ -12,3 +12,8 @@ class MineBot(commands.Bot):
         print(self.user.name)
         print(self.user.id)
         print("------")
+
+    async def on_command_error(self, context, exception):
+        if isinstance(exception, commands.CommandNotFound):
+            return
+        raise exception
