@@ -45,7 +45,7 @@ class MineBotHelp(commands.HelpCommand):
     ):  # this is called when help is invoked without arguments
         # build embed
         cmds = sorted(self.context.bot.commands, key=lambda c: c.name)
-        self.embed.description += ", ".join(f"{self.context.prefix}{c.name}" for c in cmds)
+        self.embed.description += "\n" + ", ".join(f"{self.context.prefix}{c.name}" for c in cmds)
         await self.context.send(embed=self.embed)
 
     async def send_cog_help(
