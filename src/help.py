@@ -44,22 +44,45 @@ class MineBotHelp(commands.HelpCommand):
         self, mapping
     ):  # this is called when help is invoked without arguments
         # build embed
-        cmds = sorted([c for c in self.context.bot.commands if not c.hidden], key=lambda c: c.name)
-        self.embed.description += "\n" + ", ".join(f"{self.context.prefix}{c.name}" for c in cmds)
-        await self.context.send(embed=self.embed)
+        categories = {}  # also includes commands without a category
+        # get every command object, excluding hidden commands, and group them by category
+        for cmd in self.context.bot.commands:
+            if cmd.hidden:
+                continue
+            # category aka cog
+            # if cmd is uncategorized (no cog), add it to the uncategorized category
+            if cmd.cog is None:
+                category = "Uncategorized"
+            else:
+                category = cmd.cog.qualified_name
+            # add the command to the category
+            if category not in categories:
+                categories[category] = []
+            categories[category].append(cmd)
+        # build embed
+        # sort the categories
+        categories = sorted(categories.items(), key=lambda c: c[0])
+        # for each category, build a string of commands and add it to the embed
+        for category, cmds in categories:
+            # build string of commands
+            cmd_string = ", ".join(c.name for c in cmds)
+            # add the category and commands to the embed
+            self.embed.add_field(name=category, value=cmd_string, inline=False)
+        # send embed
+        destination = self.get_destination()
+        await destination.send(embed=self.embed)
 
     async def send_cog_help(
         self, cog
     ):  # this is called when help is invoked with a cog as an argument
-        # get cog object
-        cog = self.context.get_cog(cog)
-        if cog is None:
-            return await self.send_error_message(f"Cog `{cog}` not found.")
+
         # get command list, excluding hidden commands
-        cmds = sorted([c for c in cog.get_commands() if not c.hidden], key=lambda c: c.name)
+        cmds = sorted(
+            [c for c in cog.get_commands() if not c.hidden], key=lambda c: c.name
+        )
         # build embed
         self.embed.title = f"{cog.qualified_name} Commands"
-        description = ", ".join(f"{self.context.prefix}{c.name}" for c in cmds)
+        description = ", ".join(c.name for c in cmds)
         self.embed.description = description
         # send embed
         destination = self.get_destination()
@@ -76,3 +99,6 @@ class MineBotHelp(commands.HelpCommand):
     async def send_error_message(self, error_message):
         destination = self.get_destination()
         await destination.send(error_message)
+
+    def command_not_found(self, string):
+        return f"Command or category `{string}` not found."
