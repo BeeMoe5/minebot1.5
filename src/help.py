@@ -44,7 +44,7 @@ class MineBotHelp(commands.HelpCommand):
         self, mapping
     ):  # this is called when help is invoked without arguments
         # build embed
-        cmds = sorted(self.context.bot.commands, key=lambda c: c.name)
+        cmds = sorted([c for c in self.context.bot.commands if not c.hidden], key=lambda c: c.name)
         self.embed.description += "\n" + ", ".join(f"{self.context.prefix}{c.name}" for c in cmds)
         await self.context.send(embed=self.embed)
 
@@ -55,8 +55,8 @@ class MineBotHelp(commands.HelpCommand):
         cog = self.context.get_cog(cog)
         if cog is None:
             return await self.send_error_message(f"Cog `{cog}` not found.")
-        # get command list
-        cmds = sorted(cog.get_commands(), key=lambda c: c.name)
+        # get command list, excluding hidden commands
+        cmds = sorted([c for c in cog.get_commands() if not c.hidden], key=lambda c: c.name)
         # build embed
         self.embed.title = f"{cog.qualified_name} Commands"
         description = ", ".join(f"{self.context.prefix}{c.name}" for c in cmds)

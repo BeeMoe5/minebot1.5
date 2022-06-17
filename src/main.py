@@ -23,7 +23,7 @@ async def echo(ctx, *, message: str):
     await ctx.send(message)
 
 
-@bot.command(name="eval", usage="<code>")
+@bot.command(name="eval", usage="<code>", hidden=True)
 @commands.is_owner()
 async def _eval(ctx, *, code: str):
     """Runs Python code."""
