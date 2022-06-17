@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "minebot_2_0"
+version = "0.1.0"
+description = ""
+authors = ["BeeMoe5 <48176165+BeeMoe5@users.noreply.github.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+"discord.py" = {extras = ["all"], version = "^1.7.3"}
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
