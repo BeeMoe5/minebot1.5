@@ -7,6 +7,7 @@ authors = ["BeeMoe5 <48176165+BeeMoe5@users.noreply.github.com>"]
 [tool.poetry.dependencies]
 python = "^3.8"
 "discord.py" = {extras = ["all"], version = "^1.7.3"}
+motor = "^3.0.0"
 
 [tool.poetry.dev-dependencies]
 

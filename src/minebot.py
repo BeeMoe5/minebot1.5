@@ -2,6 +2,7 @@ import random
 from pathlib import Path
 
 from discord.ext import commands
+from motor.motor_asyncio import AsyncIOMotorClient
 
 from help import MineBotHelp
 
@@ -11,6 +12,7 @@ class MineBot(commands.Bot):
         super().__init__(*args, **kwargs)
         self.help_command = MineBotHelp()
         self.is_loaded = False
+        self.db = None
 
     def load_cogs(self):
         # get cog directory
@@ -24,6 +26,12 @@ class MineBot(commands.Bot):
                 self.load_extension(f"cogs.{file_name[:-3]}")
                 print(f"Loaded {file_name}")
 
+    def connect_db(self):
+        # connect to mongodb
+        if not self.db:
+            client = AsyncIOMotorClient("mongodb://localhost:27017/")
+            self.db = client.minebot
+
     async def on_ready(self):
         print("Logged in as")
         print(self.user.name)
@@ -33,6 +41,8 @@ class MineBot(commands.Bot):
         if not self.is_loaded:
             self.load_cogs()
             self.is_loaded = True
+        # db connection
+        self.connect_db()
 
     async def on_command_error(self, context, exception):
         if isinstance(exception, commands.CommandNotFound):
