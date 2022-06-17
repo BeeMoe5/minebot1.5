@@ -12,24 +12,22 @@ bot = minebot.MineBot(
 
 
 @bot.command()
-async def ping(ctx):
+async def ping(ctx: commands.Context):
     """Pong!"""
     await ctx.send("Pong!")
 
 
 @bot.command(usage="<message>")
-async def echo(ctx, *, message: str):
+async def echo(ctx: commands.Context, *, message: str):
     """Echos a message."""
     await ctx.send(message)
 
 
 @bot.command(name="eval", usage="<code>", hidden=True)
 @commands.is_owner()
-async def _eval(ctx, *, code: str):
+async def _eval(ctx: commands.Context, *, code: str):
     """Runs Python code."""
-    # remove markdown code blocks including py
     code = code.replace("```py", "").replace("```", "")
-    # indent code
     code = "\n".join(f"    {i}" for i in code.splitlines())
     body = f"async def func():\n{code}"
     context = {
@@ -41,8 +39,6 @@ async def _eval(ctx, *, code: str):
         "guild": ctx.guild,
         "discord": discord,
     }
-    # create context
-    # run code
     try:
         exec(body, context)
         func = context["func"]
