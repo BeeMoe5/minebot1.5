@@ -38,3 +38,10 @@ class MineBot(commands.Bot):
         if isinstance(exception, commands.CommandNotFound):
             return
         raise exception
+
+    async def on_message(self, message):
+        if message.author.bot:
+            return
+        await self.process_commands(message)
+        # change the random seed for each message
+        random.seed(message.id)
