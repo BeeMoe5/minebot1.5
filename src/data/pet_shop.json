@@ -1,0 +1,24 @@
+[
+  {
+    "type": "dog",
+    "pet_messages": [
+      "You pet {0}! {0} is happy! {0} really likes you!",
+      "You pet {0}! {0} is so happy they try to jump on you!",
+        "You pet {0}! {0} is happy and happy to be petted!"
+    ],
+    "emoji": ":dog:",
+    "price": 40
+  },
+  {
+    "type": "cat",
+    "pet_messages": [
+      "You pet {0}! {0} purrs happily!",
+      "You pet {0}! {0} looks at you with a cat-like expression!",
+      "You pet {0}! {0} lays on the floor and purrs!",
+      "You pet {0}! {0} rubs against you and purrs!",
+      "You pet {0}! {0} slowly blinks with eyes full of affection!"
+    ],
+    "emoji": ":cat:",
+    "price": 40
+    }
+]

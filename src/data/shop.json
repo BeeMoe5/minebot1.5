@@ -2,7 +2,7 @@
   "Food": [
     {
       "name": "pizza",
-      "price": 6,
+      "price": 16,
       "usable": true,
       "use_msg": "You eat the pizza, it tastes good!",
       "type": "food"
@@ -11,7 +11,7 @@
   "Drink": [
     {
       "name": "coffee",
-      "price": 5,
+      "price": 15,
         "usable": true,
         "use_msg": "You drink the ~~adult fuel~~ coffee, it's good!",
         "type": "drink"
@@ -20,19 +20,10 @@
   "Dessert": [
     {
       "name": "cake",
-      "price": 8,
+      "price": 18,
         "usable": true,
         "use_msg": "You eat the cake, ITS SO GOOD! What special occasion is this?",
         "type": "dessert"
-    }
-  ],
-  "Pets": [
-    {
-      "name": "dog",
-      "price": 10,
-        "usable": true,
-        "use_msg": "You pet {}, it's happy! {} really likes you!",
-        "type": "pet"
     }
   ]
 }

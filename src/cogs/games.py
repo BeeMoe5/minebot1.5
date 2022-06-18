@@ -1,3 +1,4 @@
+import asyncio
 import random
 
 import discord
@@ -13,6 +14,12 @@ class GamesAndEconomy(commands.Cog):
             for item in isle_items:
                 if item_name == item["name"]:
                     return item
+        return None
+
+    def get_pet(self, pet_type):
+        for pet in self.bot.pet_shop_items:
+            if pet_type == pet["type"]:
+                return pet
         return None
 
     @commands.command()
@@ -39,7 +46,7 @@ class GamesAndEconomy(commands.Cog):
         emojis = list(symbols.keys())
 
         chance = random.randint(1, 100)
-        win = chance <= 25
+        win = chance <= 15
 
         if win:
             slot_1 = slot_2 = slot_3 = random.choice(emojis)
@@ -134,7 +141,12 @@ class GamesAndEconomy(commands.Cog):
             )
             # add the items to the embed
             for isle, isle_items in self.bot.shop_items.items():
-                items = [f"{item['name']} - {item['price']}" for item in isle_items]
+                items = [
+                    f"{item['name']} - {item['price']} MineDollar" + "s"
+                    if item["price"] != 1
+                    else ""
+                    for item in isle_items
+                ]
                 embed.add_field(
                     name=isle,
                     value="\n".join(items),
@@ -241,6 +253,141 @@ class GamesAndEconomy(commands.Cog):
 
         # send a message
         await ctx.send(item["use_msg"])
+
+    @commands.group(name="petshop", aliases=["pshop"])
+    async def pet_shop(self, ctx: commands.Context):
+        """
+        Check the pet shop.
+        """
+        if ctx.invoked_subcommand is None:
+            # set up the embed
+            embed = discord.Embed(
+                title="Pet Shop",
+                description="",
+                color=0x00FF00,  # green
+            )
+            # add the items to the description
+            for item in self.bot.pet_shop_items:
+                embed.description += (
+                    f"{item['emoji']} {item['type'].capitalize()} - {item['price']} MineDollar"
+                    + ("s" if item["price"] != 1 else "")
+                    + "\n"
+                )
+            # send the embed
+            await ctx.send(embed=embed)
+
+    @pet_shop.command(usage="<pet>")
+    async def buy(self, ctx: commands.Context, pet: str):
+        """
+        Buy a pet from the pet shop.
+        """
+        # get the user's balance
+        balance = await self.bot.db.players.find_one({"_id": ctx.author.id})
+        if balance is not None:
+            balance = balance["coins"]
+        else:
+            return await ctx.send("You don't have any MineDollars.")
+        # get the item
+        pet = self.get_pet(pet.lower())
+        if pet is None:
+            return await ctx.send("That pet isn't in the shop.")
+        # check if the user has enough money
+        if pet["price"] > balance:
+            return await ctx.send("You don't have enough MineDollars.")
+
+        # ask the user what they want to name the pet
+        await ctx.send(
+            "What would you like to name your pet? (type `cancel` to cancel)"
+        )
+        try:
+            msg = await self.bot.wait_for(
+                "message",
+                check=lambda m: m.author == ctx.author and m.channel == ctx.channel,
+                timeout=30,
+            )
+        except asyncio.TimeoutError:
+            return await ctx.send(
+                "You took too long to respond, the transaction has been cancelled."
+            )
+
+        if msg.content.lower() == "cancel":
+            return await ctx.send("Transaction cancelled.")
+
+        # name length check
+        if len(msg.content) > 15:
+            return await ctx.send(
+                "Your pet's name is too long, it must be 15 characters or less."
+            )
+
+        # check if the pet already exists
+        if await self.bot.db.players.find_one(
+            {"_id": ctx.author.id, "pets": pet["name"]}
+        ):
+            return await ctx.send("You already have a pet with that name.")
+
+        # subtract the price from the user's balance
+        await self.bot.db.players.update_one(
+            {"_id": ctx.author.id}, {"$inc": {"coins": int(-pet["price"])}}
+        )
+        # add the item to the user's pets
+        pet = {"type": pet["type"], "name": msg.content, "level": 1, "exp": 0}
+        # add the pet to the user's pets
+        await self.bot.db.players.update_one(
+            {"_id": ctx.author.id}, {"$push": {"pets": pet}}, upsert=True
+        )
+        # send a message
+        await ctx.send(
+            f"You bought a {pet['type']} and named it {pet['name']}! It is really happy."
+        )
+
+    @commands.group()
+    async def pets(self, ctx: commands.Context):
+        """
+        Check your pets.
+        """
+        if ctx.invoked_subcommand is None:
+            # get the user's pets
+            pets = await self.bot.db.players.find_one({"_id": ctx.author.id})
+            if pets is not None:
+                pets = pets["pets"]
+            else:
+                return await ctx.send("You don't have any pets.")
+
+            if not pets:  # incase the list exists but is empty
+                return await ctx.send("You don't have any pets.")
+
+            # set up the embed
+            embed = discord.Embed(
+                title=f"{ctx.author.name}'s pets",
+                color=0x00FF00,  # green
+            )
+            # add the pets to the embed
+            embed.description = ""
+            for n, pet in enumerate(pets, start=1):
+                embed.description += f"{n}. {pet['name']} ({pet['type'].title()})\n"
+            # send the embed
+            await ctx.send(embed=embed)
+
+    @pets.command(usage="<pet>")
+    async def pet(self, ctx: commands.Context, name: str):
+        """
+        Pet a pet.
+        """
+        # get the pet by name
+        pet = await self.bot.db.players.find_one(
+            {"_id": ctx.author.id, "pets.name": name}
+        )
+        print(pet)
+        if pet is None:
+            return await ctx.send("You don't have a pet with that name.")
+        else:
+            pet = pet["pets"][0]
+
+        # get the pet type
+        pet_type = self.get_pet(pet["type"])
+        # pet the pet
+        pet_msg = random.choice(pet_type["pet_messages"])
+        await ctx.send(pet_msg.format(pet["name"]))
 
 
 def setup(bot):

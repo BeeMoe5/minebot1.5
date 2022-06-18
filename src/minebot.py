@@ -14,8 +14,9 @@ class MineBot(commands.Bot):
         self.help_command = MineBotHelp()
         self.cogs_loaded = False
         self.db_connected = False
-        self.shop_loaded = False
+        self.shops_loaded = False
         self.shop_items = None
+        self.pet_shop_items = None
         self.db = None
 
     def load_cogs(self):
@@ -37,11 +38,15 @@ class MineBot(commands.Bot):
             client = AsyncIOMotorClient("mongodb://localhost:27017/")
             self.db = client.minebot
 
-    def load_shop(self):
+    def load_shops(self):
         # get the shop items
-        if not self.shop_loaded:
-            with open(Path(__file__).parent / "shop.json", "r") as shop_file:
-                self.shop_items = json.load(shop_file)
+        shops_dir = Path(__file__).parent / "data"
+        if not self.shops_loaded:
+            with open(shops_dir / "shop.json") as shop:
+                self.shop_items = json.load(shop)
+
+            with open(shops_dir / "pet_shop.json") as pet_shop:
+                self.pet_shop_items = json.load(pet_shop)
 
     async def on_ready(self):
         print("Logged in as")
@@ -53,7 +58,7 @@ class MineBot(commands.Bot):
         # db connection
         self.connect_db()
         # shop loading
-        self.load_shop()
+        self.load_shops()
 
     async def on_command_error(self, context, exception):
         if isinstance(exception, commands.CommandNotFound):
