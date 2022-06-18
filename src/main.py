@@ -1,13 +1,13 @@
 import random
 
 import discord
+from discord.ext import commands
 
 import minebot
 from creds import TOKEN
-from discord.ext import commands
 
 bot = minebot.MineBot(
-    command_prefix="m!",
+    command_prefix=["m!", "M!"],
     case_insensitive=True,
     intents=discord.Intents.all(),
 )
