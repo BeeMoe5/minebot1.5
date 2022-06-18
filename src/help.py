@@ -97,7 +97,7 @@ class MineBotHelp(commands.HelpCommand):
         # send embed
         destination = self.get_destination()
         await destination.send(embed=self.embed)
-        
+
     async def send_group_help(self, group):
         # build embed
         self.embed.title = self.context.prefix + group.name
@@ -105,7 +105,12 @@ class MineBotHelp(commands.HelpCommand):
         # for each command in the group, add it to the embed
         for cmd in group.commands:
             self.embed.add_field(
-                name=self.context.prefix + cmd.name + "|".join(cmd.aliases) + f" {cmd.signature}", value=cmd.help, inline=False
+                name=self.context.prefix
+                + cmd.name
+                + "|".join(cmd.aliases)
+                + f" {cmd.signature}",
+                value=cmd.help,
+                inline=False,
             )
         # send embed
         destination = self.get_destination()
