@@ -371,13 +371,12 @@ class GamesAndEconomy(commands.Cog):
     @pets.command(usage="<pet>")
     async def pet(self, ctx: commands.Context, name: str):
         """
-        Pet a pet.
+        Pet your pets.`
         """
         # get the pet by name
         pet = await self.bot.db.players.find_one(
             {"_id": ctx.author.id, "pets.name": name}
         )
-        print(pet)
         if pet is None:
             return await ctx.send("You don't have a pet with that name.")
         else:
