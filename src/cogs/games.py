@@ -319,11 +319,17 @@ class GamesAndEconomy(commands.Cog):
                 "Your pet's name is too long, it must be 15 characters or less."
             )
 
-        # check if the pet already exists
-        if await self.bot.db.players.find_one(
-            {"_id": ctx.author.id, "pets": pet["name"]}
-        ):
-            return await ctx.send("You already have a pet with that name.")
+        pets = await self.bot.db.players.find_one(
+            {"_id": ctx.author.id, "pets": {"$exists": True}}
+        )
+        if pets is not None:
+            pets = pets["pets"]
+            # check if the user already has a pet with that name
+            name_cases = list(all_casings(msg.content))
+            if any(pet["name"] in name_cases for pet in pets):
+                return await ctx.send(
+                    "You already have a pet with that name, try again with a different name."
+                )
 
         # subtract the price from the user's balance
         await self.bot.db.players.update_one(
