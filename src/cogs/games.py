@@ -371,7 +371,7 @@ class GamesAndEconomy(commands.Cog):
     @pets.command(usage="<pet>")
     async def pet(self, ctx: commands.Context, name: str):
         """
-        Pet your pets.`
+        Pet your pets.
         """
         # get the pet by name
         pet = await self.bot.db.players.find_one(
