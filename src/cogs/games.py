@@ -4,6 +4,8 @@ import random
 import discord
 from discord.ext import commands
 
+from utils import all_casings, cooldown
+
 
 class GamesAndEconomy(commands.Cog):
     def __init__(self, bot):
@@ -393,6 +395,31 @@ class GamesAndEconomy(commands.Cog):
         # pet the pet
         pet_msg = random.choice(pet_type["pet_messages"])
         await ctx.send(pet_msg.format(pet["name"]))
+
+    # ratelimit the pet command
+    @cooldown(days=1)
+    @pets.command(usage="<pet>")
+    async def feed(self, ctx: commands.Context, name: str):
+        """
+        Feed your pets.
+        """
+        # get the pet by name
+        pet = await self.bot.db.players.find_one(
+            {"_id": ctx.author.id, "pets.name": name}
+        )
+        if pet is None:
+            return await ctx.send("You don't have a pet with that name.")
+        else:
+            pet = pet["pets"][0]
+
+        await ctx.send(
+            f"You feed {pet['name']}! {pet['name']} is satisfied and earns 5 xp, and you earn 3 coins!"
+        )
+        # add xp to the pet and add coins to the user
+        await self.bot.db.players.update_one(
+            {"_id": ctx.author.id, "pets.name": name},
+            {"$inc": {"pets.$.exp": 5, "coins": 3}},
+        )
 
 
 def setup(bot):
