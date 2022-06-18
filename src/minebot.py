@@ -6,6 +6,7 @@ from discord.ext import commands
 from motor.motor_asyncio import AsyncIOMotorClient
 
 from help import MineBotHelp
+from utils import CoolDownError
 
 
 class MineBot(commands.Bot):
@@ -60,9 +61,14 @@ class MineBot(commands.Bot):
         # shop loading
         self.load_shops()
 
-    async def on_command_error(self, context, exception):
+    async def on_command_error(self, ctx, exception):
         if isinstance(exception, commands.CommandNotFound):
             return
+        elif isinstance(exception, CoolDownError):
+            return await ctx.send(exception.message)
+        elif isinstance(exception, commands.MissingRequiredArgument):
+            return await ctx.send(f"Missing required argument: {exception.param.name}")
+
         raise exception
 
     async def on_message(self, message):
