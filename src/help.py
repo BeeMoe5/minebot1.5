@@ -65,7 +65,7 @@ class MineBotHelp(commands.HelpCommand):
         # for each category, build a string of commands and add it to the embed
         for category, cmds in categories:
             # build string of commands
-            cmd_string = ", ".join(c.name + "|".join(c.aliases) for c in cmds)
+            cmd_string = ", ".join(c.name for c in cmds)
             # add the category and commands to the embed
             self.embed.add_field(name=category, value=cmd_string, inline=False)
         # send embed
@@ -82,7 +82,7 @@ class MineBotHelp(commands.HelpCommand):
         )
         # build embed
         self.embed.title = f"{cog.qualified_name} Commands"
-        description = ", ".join(c.name + "|".join(c.aliases) for c in cmds)
+        description = ", ".join(c.name for c in cmds)
         self.embed.description = description
         # send embed
         destination = self.get_destination()
@@ -94,6 +94,19 @@ class MineBotHelp(commands.HelpCommand):
             command.name + "|".join(command.aliases) + f" {command.signature}"
         )
         self.embed.description = command.help
+        # send embed
+        destination = self.get_destination()
+        await destination.send(embed=self.embed)
+        
+    async def send_group_help(self, group):
+        # build embed
+        self.embed.title = self.context.prefix + group.name
+        self.embed.description = group.help + "\n\n*this is a group command*"
+        # for each command in the group, add it to the embed
+        for cmd in group.commands:
+            self.embed.add_field(
+                name=self.context.prefix + cmd.name + "|".join(cmd.aliases) + f" {cmd.signature}", value=cmd.help, inline=False
+            )
         # send embed
         destination = self.get_destination()
         await destination.send(embed=self.embed)
