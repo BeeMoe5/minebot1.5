@@ -3,7 +3,7 @@ import asyncio
 import discord
 from discord.ext import commands
 
-from utils import all_casings, get_pet_data, get_item
+from utils import all_casings, get_item, get_pet_data
 
 
 class Shops(commands.Cog):
@@ -161,3 +161,7 @@ class Shops(commands.Cog):
         await ctx.send(
             f"You bought a {pet['type']} and named it {pet['name']}! It is really happy."
         )
+
+
+def setup(bot):
+    bot.add_cog(Shops(bot))
