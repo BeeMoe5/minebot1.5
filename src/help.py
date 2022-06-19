@@ -105,8 +105,7 @@ class MineBotHelp(commands.HelpCommand):
         # for each command in the group, add it to the embed
         for cmd in group.commands:
             self.embed.add_field(
-                name=self.context.prefix
-                + cmd.name
+                name=f"{self.context.prefix}{cmd.parent.name} {cmd.name}"
                 + "|".join(cmd.aliases)
                 + f" {cmd.signature}",
                 value=cmd.help,
