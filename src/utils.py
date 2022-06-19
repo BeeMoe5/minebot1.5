@@ -17,7 +17,7 @@ def format_time(dt: datetime.timedelta):
     """
     ret = ""
     days = dt.seconds // 86400
-    hours = dt.seconds // 3600
+    hours = (dt.seconds % 86400) // 3600
     minutes = (dt.seconds % 3600) // 60
     seconds = dt.seconds % 60
     if days > 0:
@@ -41,7 +41,7 @@ def cooldown(seconds=0, minutes=0, hours=0, days=0):
     :param days: number of days
     :return: a decorator
     """
-    cooldown_in_seconds = seconds + minutes * 60 + hours * 3600 + days * 86400
+    timestamp_now = datetime.datetime.now().timestamp()
 
     async def predicate(ctx):
         cooldowns = await ctx.bot.db.players.find_one(
@@ -49,33 +49,44 @@ def cooldown(seconds=0, minutes=0, hours=0, days=0):
         )
         if cooldowns:
             cooldowns = cooldowns["cooldowns"]
-            # get the current time
-            now: datetime.datetime = datetime.datetime.now()
             # get the command from cooldowns list
             for cooldown in cooldowns:
                 # print(cooldown, ctx.command.name)
-                if cooldown["command_name"] == ctx.command.name:
+                if (
+                    cooldown["command_name"]
+                    == ctx.command.parent.name + ctx.command.name
+                    if ctx.command.parent
+                    else ctx.command.name
+                ):
                     # get the cooldown time
-                    cooldown_time: int = cooldown["cooldown_time"]
-                    # get how much time is left until the cooldown is over
-                    time_left: datetime.timedelta = datetime.timedelta(
-                        seconds=cooldown_time
-                    ) - (
-                        now - datetime.datetime.fromtimestamp(cooldown["cooldown_time"])
+                    cooldown_timestamp: int = cooldown["cooldown_time"]
+                    # get the cooldown end time
+                    cooldown_dt: datetime.datetime = datetime.datetime.fromtimestamp(
+                        cooldown_timestamp
                     )
+                    # get how much time is left until the cooldown is over
+
                     # if the difference is greater than the cooldown time, return True
-                    if time_left.seconds > cooldown_in_seconds:
+                    if datetime.datetime.now() > cooldown_dt:
                         return True
                     else:
-                        formatted_time = format_time(time_left)
+                        formatted_time = format_time(
+                            cooldown_dt - datetime.datetime.now()
+                        )
                         raise CoolDownError(
                             f"You can use this command again in {formatted_time}"
                         )
 
         else:  # set up a new cooldowns array
+            cooldown_timestamp = seconds + minutes * 60 + hours * 3600 + days * 86400
+            cooldown_dt = datetime.datetime.fromtimestamp(
+                timestamp_now + cooldown_timestamp
+            )
             cooldown_data = {
-                "command_name": ctx.command.name,
-                "cooldown_time": cooldown_in_seconds,
+                "command_name": ctx.command.parent.name + ctx.command.name
+                if ctx.command.parent
+                else ctx.command.name,
+                "cooldown_time": cooldown_dt.timestamp(),
             }
             ctx.bot.db.players.update_one(
                 {"_id": ctx.author.id},
