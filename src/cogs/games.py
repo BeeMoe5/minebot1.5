@@ -388,7 +388,12 @@ class GamesAndEconomy(commands.Cog):
         if pet is None:
             return await ctx.send("You don't have a pet with that name.")
         else:
-            pet = pet["pets"][0]
+            # find the pet in the list
+            pet = next(
+                (p for p in pet["pets"] if p["name"] == name), None
+            )  # get the pet
+            if pet is None:
+                return await ctx.send("You don't have a pet with that name.")
 
         # get the pet type
         pet_type = self.get_pet(pet["type"])
