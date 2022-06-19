@@ -105,3 +105,18 @@ def all_casings(input_string: str):
             for sub_casing in all_casings(input_string[1:]):
                 yield first.lower() + sub_casing
                 yield first.upper() + sub_casing
+
+
+def get_pet_data(ctx, pet_type):
+    for pet_data in ctx.bot.pet_shop_items:
+        if pet_type == pet_data["type"]:
+            return pet_data
+    return None
+
+
+def get_item(ctx, item_name):
+    for isle, isle_items in ctx.bot.shop_items.items():
+        for item in isle_items:
+            if item_name == item["name"]:
+                return item
+    return None
