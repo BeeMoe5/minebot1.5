@@ -4,7 +4,7 @@ import discord
 from discord.ext import commands
 
 
-class GamesAndEconomy(commands.Cog):
+class Games(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
@@ -92,4 +92,4 @@ class GamesAndEconomy(commands.Cog):
 
 
 def setup(bot):
-    bot.add_cog(GamesAndEconomy(bot))
+    bot.add_cog(Games(bot))
