@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 
-from utils import get_item
+from utils import cooldown, get_item
 
 
 class Player(commands.Cog):
@@ -97,6 +97,48 @@ class Player(commands.Cog):
 
         # send a message
         await ctx.send(item["use_msg"])
+
+    @commands.command(aliases=["lb"])
+    async def leaderboard(self, ctx: commands.Context):
+        """
+        Check the leaderboard.
+        """
+
+        # get the leaderboard
+        DESCENDING = -1
+        # sort by coins
+        players = (
+            await self.bot.db.players.find().sort("coins", DESCENDING).to_list(None)
+        )
+        # set up the embed
+        embed = discord.Embed(
+            title="Leaderboard",
+            description="",
+            color=0x00FF00,  # green
+        )
+        # add the leaderboard to the embed
+        for n, player in enumerate(players, start=1):
+            user = self.bot.get_user(player["_id"])
+            embed.description += (
+                f"{n}. {user.mention} - {player['coins']} MineDollar"
+                + ("s" if player["coins"] != 1 else "")
+                + "\n"
+            )
+        # send the embed
+        await ctx.send(embed=embed)
+
+    @cooldown(days=1)
+    @commands.command()
+    async def daily(self, ctx: commands.Context):
+        """
+        Get your daily reward.
+        """
+        # add the daily reward to the user's balance
+        await self.bot.db.players.update_one(
+            {"_id": ctx.author.id}, {"$inc": {"coins": 7}}, upsert=True
+        )
+        # send a message
+        await ctx.send("You received 7 MineDollar!")
 
 
 def setup(bot):
